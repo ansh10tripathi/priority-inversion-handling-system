@@ -358,8 +358,6 @@ priority_inversion_system/
 │
 ├── README.md                        # This file
 ├── requirements.txt                 # Python dependencies
-├── PROJECT_REPORT.md                # Detailed project report
-└── VIVA_QUESTIONS.md                # Q&A for presentations
 ```
 
 ---
