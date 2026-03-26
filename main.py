@@ -87,7 +87,7 @@ def print_task_metrics(tasks):
         print(f"    Turnaround Time: {task.get_turnaround_time()}")
 
 
-def run_simulation(protocol, tasks=None, ceiling_priority=None, verbose=True, realtime=False, delay=1.0):
+def run_simulation(protocol, tasks=None, ceiling_priority=None, verbose=True, realtime=False, delay=1.0, interactive=False):
     """Run simulation with specified protocol."""
     if verbose and not realtime:
         print(f"\n{'='*60}")
@@ -99,7 +99,7 @@ def run_simulation(protocol, tasks=None, ceiling_priority=None, verbose=True, re
         ceiling_priority = 3 if protocol == 'PCP' else None
     
     mutex = Mutex(ceiling_priority=ceiling_priority)
-    sim = Simulation(tasks, mutex, protocol, realtime=realtime, delay=delay)
+    sim = Simulation(tasks, mutex, protocol, realtime=realtime, delay=delay, interactive=interactive)
     results = sim.run()
     
     if verbose and not realtime:
@@ -236,8 +236,18 @@ def run_cli():
         metavar='SECONDS',
         help='Delay between time steps in realtime mode (default: 1.0 seconds)'
     )
+
+    parser.add_argument(
+        '--interactive',
+        action='store_true',
+        help='Step-by-step mode: press ENTER to advance each time step (implies --realtime)'
+    )
     
     args = parser.parse_args()
+
+    # --interactive implies --realtime
+    if args.interactive:
+        args.realtime = True
     
     # Determine protocol name
     protocol_map = {'none': 'None', 'pip': 'PIP', 'pcp': 'PCP'}
@@ -289,7 +299,9 @@ def run_cli():
     print(f"Priority Inversion Handling System")
     print(f"{'='*60}")
     
-    if args.realtime:
+    if args.interactive:
+        print(f"\n[INTERACTIVE] Step-by-step mode enabled. Press ENTER to advance each step.")
+    elif args.realtime:
         print(f"\n[REALTIME] Real-Time Mode Enabled (Delay: {args.delay}s per step)")
         print(f"Watch the simulation execute step-by-step...\n")
     
@@ -320,8 +332,8 @@ def run_cli():
                 task_set = create_tasks()
             
             ceiling = ceiling_priority if proto == 'PCP' else None
-            results, task_set = run_simulation(proto, task_set, ceiling, verbose=not args.realtime, 
-                                               realtime=args.realtime, delay=args.delay)
+            results, task_set = run_simulation(proto, task_set, ceiling, verbose=not args.realtime,
+                                               realtime=args.realtime, delay=args.delay, interactive=args.interactive)
             results_list.append((results, task_set, proto))
         
         # Print comparison
@@ -371,7 +383,7 @@ def run_cli():
     else:
         # Run single protocol
         results, tasks = run_simulation(protocol, tasks, ceiling_priority, verbose=not args.realtime,
-                                       realtime=args.realtime, delay=args.delay)
+                                        realtime=args.realtime, delay=args.delay, interactive=args.interactive)
         
         # Display detailed metrics if requested
         if args.metrics_report:
