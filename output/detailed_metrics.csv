@@ -1,0 +1,18 @@
+Overall Metrics
+Metric,Value
+Protocol,PIP
+Total Time,8
+Avg Waiting Time,1.67
+Avg Turnaround Time,4.33
+Avg Response Time,1.67
+CPU Utilization (%),100.00
+Context Switches,3
+Priority Inversion Count,1
+Priority Inversion Duration,1
+Throughput,0.3750
+
+Per-Task Metrics
+Task ID,Priority,Arrival,Execution,Start,Finish,Waiting Time,Turnaround Time,Response Time
+L,1,0,3,0,3,0,3,0
+H,3,1,2,3,5,2,4,2
+M,2,2,3,5,8,3,6,3

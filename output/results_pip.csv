@@ -1,0 +1,32 @@
+Priority Inversion Handling System - Simulation Results
+
+Protocol,PIP
+
+Overall Metrics
+Metric,Value
+Total Time,8
+Average Waiting Time,1.67
+Average Turnaround Time,4.33
+Average Response Time,1.67
+CPU Utilization (%),100.00
+Context Switches,3
+Priority Inversion Count,1
+Priority Inversion Duration,1
+Throughput,0.3750
+
+Task Metrics
+Task ID,Priority,Arrival Time,Execution Time,Start Time,Finish Time,Waiting Time,Turnaround Time,Response Time
+L,1,0,3,0,3,0,3,0
+H,3,1,2,3,5,2,4,2
+M,2,2,3,5,8,3,6,3
+
+Execution Timeline
+Time,Task ID
+0,L
+1,L
+2,L
+3,H
+4,H
+5,M
+6,M
+7,M

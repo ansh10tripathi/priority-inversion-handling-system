@@ -1,0 +1,10 @@
+Metric,Value
+Protocol,PCP
+Total Time,8
+Avg Waiting Time,1.67
+Avg Turnaround Time,4.33
+
+Task ID,Priority,Arrival,Execution,Waiting Time,Turnaround Time
+L,1,0,3,0,3
+H,3,1,2,2,4
+M,2,2,3,3,6

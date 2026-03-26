@@ -8,10 +8,7 @@ __pycache__/
 .venv/
 env/
 docs/
-# Output files
-*.png
-*.csv
-*.json
+
 
 # Logs
 *.log

@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "task_id": "VeryLow",
+      "priority": 1,
+      "arrival_time": 0,
+      "execution_time": 8,
+      "needs_resource": true
+    },
+    {
+      "task_id": "Critical",
+      "priority": 10,
+      "arrival_time": 1,
+      "execution_time": 3,
+      "needs_resource": true
+    },
+    {
+      "task_id": "Medium1",
+      "priority": 5,
+      "arrival_time": 2,
+      "execution_time": 4,
+      "needs_resource": false
+    },
+    {
+      "task_id": "Medium2",
+      "priority": 6,
+      "arrival_time": 3,
+      "execution_time": 3,
+      "needs_resource": false
+    },
+    {
+      "task_id": "Low",
+      "priority": 2,
+      "arrival_time": 4,
+      "execution_time": 2,
+      "needs_resource": false
+    }
+  ],
+  "ceiling_priority": 10
+}

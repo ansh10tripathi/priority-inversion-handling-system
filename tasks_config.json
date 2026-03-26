@@ -1,0 +1,26 @@
+{
+  "tasks": [
+    {
+      "task_id": "L",
+      "priority": 1,
+      "arrival_time": 0,
+      "execution_time": 3,
+      "needs_resource": true
+    },
+    {
+      "task_id": "H",
+      "priority": 3,
+      "arrival_time": 1,
+      "execution_time": 2,
+      "needs_resource": true
+    },
+    {
+      "task_id": "M",
+      "priority": 2,
+      "arrival_time": 2,
+      "execution_time": 3,
+      "needs_resource": false
+    }
+  ],
+  "ceiling_priority": 3
+}

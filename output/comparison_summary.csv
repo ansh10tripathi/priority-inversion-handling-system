@@ -1,0 +1,12 @@
+Protocol Comparison Summary
+
+Metric,None,PIP,PCP
+Total Time,8,8,8
+Avg Waiting Time,2.67,1.67,2.67
+Avg Turnaround Time,5.33,4.33,5.33
+Avg Response Time,1.67,1.67,1.67
+CPU Utilization (%),100.00,100.00,100.00
+Context Switches,4,3,4
+Inversion Count,1,1,1
+Inversion Duration,5,1,5
+Throughput,0.38,0.38,0.38

@@ -1,0 +1,46 @@
+{
+  "protocols": [
+    {
+      "name": "None",
+      "metrics": {
+        "total_time": 8,
+        "avg_waiting_time": 2.67,
+        "avg_turnaround_time": 5.33,
+        "avg_response_time": 1.67,
+        "cpu_utilization": 100.0,
+        "context_switches": 4,
+        "priority_inversion_count": 1,
+        "priority_inversion_duration": 5,
+        "throughput": 0.375
+      }
+    },
+    {
+      "name": "PIP",
+      "metrics": {
+        "total_time": 8,
+        "avg_waiting_time": 1.67,
+        "avg_turnaround_time": 4.33,
+        "avg_response_time": 1.67,
+        "cpu_utilization": 100.0,
+        "context_switches": 3,
+        "priority_inversion_count": 1,
+        "priority_inversion_duration": 1,
+        "throughput": 0.375
+      }
+    },
+    {
+      "name": "PCP",
+      "metrics": {
+        "total_time": 8,
+        "avg_waiting_time": 2.67,
+        "avg_turnaround_time": 5.33,
+        "avg_response_time": 1.67,
+        "cpu_utilization": 100.0,
+        "context_switches": 4,
+        "priority_inversion_count": 1,
+        "priority_inversion_duration": 5,
+        "throughput": 0.375
+      }
+    }
+  ]
+}
