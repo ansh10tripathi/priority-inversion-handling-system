@@ -407,15 +407,15 @@ Contributions are welcome! Here's how you can help:
 
 ---
 
-## 📚 Documentation
+<!-- ## 📚 Documentation
 
 - [Project Report](PROJECT_REPORT.md) - Comprehensive technical documentation
 - [Viva Questions](VIVA_QUESTIONS.md) - Q&A for presentations
 - [CLI Documentation](CLI_DOCUMENTATION.md) - Complete CLI reference
 - [Refactoring Summary](REFACTORING_SUMMARY.md) - Architecture details
-- [Quick Reference](MODULAR_STRUCTURE_QUICKREF.md) - Import guide
+- [Quick Reference](MODULAR_STRUCTURE_QUICKREF.md) - Import guide -->
 
----
+<!-- --- -->
 
 ## 📖 References
 
