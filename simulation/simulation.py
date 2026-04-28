@@ -66,6 +66,10 @@ class Simulation:
 
         # Check for arriving tasks
         self.scheduler.check_arrivals(self.tasks)
+        for task in self.tasks:
+            if task.arrival_time == current_time:
+                self.event_logs.append({"time": current_time, "type": "run",
+                    "message": f"Task {task.task_id} arrived (priority={task.priority})"})
 
         # Handle mutex requests
         self.handle_mutex_requests()
@@ -77,7 +81,9 @@ class Simulation:
                 self.inversion_start_time = current_time
                 self.inversion_high_task = max(self.mutex.waiting_queue, key=lambda t: t.priority)
                 self.inversion_low_task = self.mutex.owner
-                events.append("Priority Inversion Detected")
+                self.event_logs.append({"time": current_time, "type": "inversion",
+                    "message": f"Priority inversion detected: Task {self.inversion_high_task.task_id} "
+                               f"blocked by Task {self.inversion_low_task.task_id}"})
         else:
             if self.inversion_start_time is not None:
                 self.metrics_collector.record_priority_inversion(
@@ -86,6 +92,8 @@ class Simulation:
                     self.inversion_high_task,
                     self.inversion_low_task
                 )
+                self.event_logs.append({"time": current_time, "type": "protocol",
+                    "message": "Priority inversion resolved"})
                 self.inversion_start_time = None
                 self.inversion_high_task = None
                 self.inversion_low_task = None
@@ -93,10 +101,9 @@ class Simulation:
         # Apply protocols
         if self.protocol == 'PIP' and inversion_detected:
             apply_priority_inheritance(self.tasks, self.mutex)
-            events.append("Applying PIP: Priority Inheritance Applied")
-        elif self.protocol == 'PCP' and self.current_task:
-            if apply_priority_ceiling(self.current_task, self.mutex):
-                events.append("Applying PCP: Priority Ceiling Applied")
+            self.event_logs.append({"time": current_time, "type": "protocol",
+                "message": f"PIP: Task {self.mutex.owner.task_id} priority raised to "
+                           f"{self.mutex.owner.priority}"})
 
         # Select next task
         next_task = self.scheduler.get_next_task()
@@ -115,11 +122,14 @@ class Simulation:
 
             if next_task.completed:
                 next_task.finish_time = current_time + 1
-                events.append(f"Task {next_task.task_id} Completed")
+                self.event_logs.append({"time": current_time + 1, "type": "complete",
+                    "message": f"Task {next_task.task_id} completed"})
                 if next_task.has_resource:
-                    self.mutex.unlock()
                     self.restore_priority(next_task)
+                    self.mutex.unlock()
                     self.unblock_waiting_tasks()
+                elif self.protocol == 'PIP':
+                    self.restore_priority(next_task)
                 self.scheduler.remove_task(next_task)
                 if not self.realtime:
                     logger.info(f"Task {next_task.task_id} completed")
@@ -141,9 +151,19 @@ class Simulation:
         """Handle tasks requesting mutex access."""
         for task in self.scheduler.ready_queue:
             if task.needs_resource and not task.has_resource and not task.waiting:
-                if not self.mutex.lock(task):
+                if self.mutex.lock(task):
+                    if self.protocol == 'PCP':
+                        old_p = task.priority
+                        apply_priority_ceiling(task, self.mutex)
+                        if task.priority != old_p:
+                            self.event_logs.append({"time": self.scheduler.current_time, "type": "protocol",
+                                "message": f"PCP: Task {task.task_id} priority raised "
+                                           f"{old_p} → {task.priority}"})
+                else:
                     self.mutex.add_to_waiting(task)
                     self.scheduler.remove_task(task)
+                    self.event_logs.append({"time": self.scheduler.current_time, "type": "error",
+                        "message": f"Task {task.task_id} blocked — waiting for mutex"})
 
     def restore_priority(self, task):
         """Restore task to original priority."""
@@ -228,5 +248,6 @@ class Simulation:
         return {
             'timeline': self.timeline,
             'metrics': metrics,
+            'logs': self.event_logs,
             'protocol': self.protocol
         }

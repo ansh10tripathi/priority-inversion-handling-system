@@ -73,7 +73,7 @@ def apply_priority_ceiling(task, mutex):
     if mutex.ceiling_priority is None:
         return False
 
-    if task.has_resource and task.priority < mutex.ceiling_priority:
+    if task.priority < mutex.ceiling_priority:
         old_priority = task.priority
         task.priority = mutex.ceiling_priority
         logger.info(f"Priority Ceiling: Task {task.task_id} priority "
