@@ -1,6 +1,8 @@
 """Gantt chart visualization module for Priority Inversion Handling System."""
 
 import warnings
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import Rectangle
