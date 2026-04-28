@@ -1,5 +1,7 @@
 """Performance comparison graphs module for Priority Inversion Handling System."""
 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
 
