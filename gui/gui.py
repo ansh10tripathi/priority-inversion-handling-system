@@ -11,7 +11,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from gui.controller import SimController, DEFAULT_TASKS
+from gui.controller import SimController, DEFAULT_TASKS, get_default_tasks
 
 # ── Palette ──────────────────────────────────────────────────────────────────
 
@@ -386,9 +386,9 @@ class App(tk.Tk):
         self._refresh_task_tree()
 
     def _load_example(self):
-        self._task_rows = [dict(**d) for d in DEFAULT_TASKS]
+        self._task_rows = get_default_tasks()
         self._refresh_task_tree()
-        self._log('Loaded default priority-inversion scenario (L / H / M)', 'time')
+        self._log('Loaded default priority-inversion scenario (L / H / M1 / M2)', 'time')
 
     def _refresh_task_tree(self):
         for item in self._task_tree.get_children():
@@ -468,7 +468,7 @@ class App(tk.Tk):
             return
         if self._ctrl._tasks:   # already initialised
             return
-        task_dicts = self._task_rows if self._task_rows else list(DEFAULT_TASKS)
+        task_dicts = self._task_rows if self._task_rows else get_default_tasks()
         protocol   = self._protocol_var.get()
         self._ctrl.reset(task_dicts, protocol)
         self._assign_colors(task_dicts)

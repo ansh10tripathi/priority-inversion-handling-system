@@ -19,11 +19,17 @@ from simulation.metrics import MetricsCollector, calculate_metrics
 
 # ── Default scenario (the classic priority-inversion demo) ──────────────────
 
-DEFAULT_TASKS = [
-    dict(task_id='L', priority=1, arrival_time=0, execution_time=3, needs_resource=True),
-    dict(task_id='H', priority=3, arrival_time=1, execution_time=2, needs_resource=True),
-    dict(task_id='M', priority=2, arrival_time=2, execution_time=3, needs_resource=False),
-]
+def get_default_tasks():
+    """Return the predefined priority-inversion demo scenario."""
+    return [
+        dict(task_id='L',  priority=1, arrival_time=0, execution_time=10, needs_resource=True),
+        dict(task_id='H',  priority=5, arrival_time=4, execution_time=2,  needs_resource=True),
+        dict(task_id='M1', priority=3, arrival_time=1, execution_time=4,  needs_resource=False),
+        dict(task_id='M2', priority=4, arrival_time=2, execution_time=3,  needs_resource=False),
+    ]
+
+
+DEFAULT_TASKS = get_default_tasks()
 
 
 def _make_tasks(task_dicts):
