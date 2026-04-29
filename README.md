@@ -1,274 +1,348 @@
 # Priority Inversion Handling System
 
-[![Python](https://img.shields.io/badge/Python-3.7%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19-61DAFB.svg)](https://react.dev/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Active-success.svg)]()
-[![Contributions](https://img.shields.io/badge/Contributions-Welcome-orange.svg)]()
 
-A comprehensive simulation system for demonstrating and analyzing **priority inversion** in real-time operating systems, with implementations of Priority Inheritance Protocol (PIP) and Priority Ceiling Protocol (PCP).
+A full-stack web-based educational simulator for demonstrating and analysing **priority inversion** in real-time operating systems. Implements three scheduling protocols — None (baseline), PIP, and PCP — with an interactive React dashboard, animated Gantt charts, step-by-step execution mode, and comprehensive performance metrics.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [What is Priority Inversion?](#what-is-priority-inversion)
 - [Protocols Implemented](#protocols-implemented)
 - [Architecture](#architecture)
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Usage Examples](#usage-examples)
-- [Example Output](#example-output)
-- [Visualizations](#visualizations)
 - [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [API Reference](#api-reference)
+- [Frontend Pages](#frontend-pages)
+- [Features](#features)
+- [Example Output](#example-output)
+- [CLI Usage](#cli-usage)
 - [Future Improvements](#future-improvements)
-- [Contributing](#contributing)
+- [References](#references)
 - [License](#license)
 
 ---
 
-## 🎯 Overview
+## Overview
 
-This project simulates priority inversion scenarios in real-time operating systems and demonstrates how different protocols handle this critical scheduling anomaly. Built for educational purposes, it provides detailed metrics, visualizations, and comparative analysis of scheduling protocols.
+This project simulates priority inversion scenarios in real-time operating systems and demonstrates how different protocols handle this critical scheduling anomaly.
 
 **Key Highlights:**
-- 🔄 Preemptive priority scheduling simulation
-- 🛡️ Three protocol implementations (None, PIP, PCP)
-- 📊 Comprehensive performance metrics
-- 📈 Enhanced Gantt chart visualizations
-- 🔍 Priority inversion detection and tracking
-- 📁 Export results to CSV/JSON
+- Full-stack web application (FastAPI backend + React 19 frontend)
+- Interactive Gantt chart with tick-by-tick animation
+- Step-by-step execution mode with live scheduler state
+- Auto-play mode with adjustable speed slider
+- Task CRUD editor — define custom task sets or use the built-in demo
+- Protocol comparison table with best-value highlighting
+- Filterable event log viewer
+- PNG graph export (Gantt + comparison charts)
+- Legacy CLI interface still available
 
 ---
 
-## ⚠️ What is Priority Inversion?
+## What is Priority Inversion?
 
 **Priority inversion** is a scheduling anomaly where a high-priority task is indirectly blocked by a lower-priority task, violating the priority-based scheduling principle.
 
-### How It Occurs
-
 ```
-┌─────────────────────────────────────────────────────┐
-│  Time 0: Low priority task (L) acquires mutex      │
-│  Time 1: High priority task (H) needs mutex → BLOCKED
-│  Time 2: Medium priority task (M) preempts L       │
-│  Result: H waits for both M and L (INVERSION!)     │
-└─────────────────────────────────────────────────────┘
+Time 0: Low priority task (L) acquires mutex
+Time 1: High priority task (H) needs mutex → BLOCKED
+Time 2: Medium priority task (M) preempts L
+Result: H waits for both M and L  ← INVERSION
 ```
 
-### Real-World Impact
-
-**Mars Pathfinder (1997):** NASA's Mars Pathfinder experienced system resets due to priority inversion. The issue was resolved by enabling Priority Inheritance Protocol in the VxWorks RTOS.
+**Real-world impact — Mars Pathfinder (1997):** NASA's Mars Pathfinder experienced system resets due to priority inversion. The issue was resolved by enabling Priority Inheritance Protocol in the VxWorks RTOS.
 
 ---
 
-## 🔧 Protocols Implemented
+## Protocols Implemented
 
-### 1. No Protocol (Baseline)
-- Standard preemptive priority scheduling
-- No priority inversion handling
-- Used as baseline for comparison
+### None (Baseline)
+Standard preemptive priority scheduling with no inversion handling. Used as a reference for comparison.
 
-### 2. Priority Inheritance Protocol (PIP)
-**Reactive approach:** When a high-priority task blocks on a resource, the owner temporarily inherits the higher priority.
+### Priority Inheritance Protocol (PIP)
+**Reactive:** When a high-priority task blocks on a resource, the mutex owner temporarily inherits the higher priority.
 
-**Advantages:**
-- ✅ Simple implementation
-- ✅ Only raises priority when needed
-- ✅ Transparent to tasks
+- Simple to implement, transparent to tasks
+- Reactive — inversion must occur before it is corrected
+- Potential for deadlock with multiple resources
 
-**Disadvantages:**
-- ❌ Reactive (inversion must occur first)
-- ❌ Potential for deadlock with multiple resources
+### Priority Ceiling Protocol (PCP)
+**Proactive:** Each mutex has a ceiling priority equal to the highest priority of any task that uses it. When a task acquires the mutex its priority is immediately raised to the ceiling.
 
-### 3. Priority Ceiling Protocol (PCP)
-**Proactive approach:** Each mutex has a ceiling priority. When a task acquires the mutex, its priority is immediately raised to the ceiling.
-
-**Advantages:**
-- ✅ Prevents priority inversion proactively
-- ✅ More predictable behavior
-- ✅ Prevents deadlock (with proper ceiling assignment)
-
-**Disadvantages:**
-- ❌ Requires knowledge of all tasks using resource
-- ❌ May raise priority unnecessarily
+- Prevents inversion before it occurs
+- More predictable, prevents deadlock with proper ceiling assignment
+- Requires prior knowledge of all tasks using the resource
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Priority Inversion System                 │
-└─────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-   ┌────▼────┐          ┌────▼────┐          ┌────▼────┐
-   │ Models  │          │Scheduler│          │Simulation│
-   │         │          │         │          │         │
-   │  Task   │◄─────────│Scheduler│◄─────────│  Core   │
-   └─────────┘          │  Mutex  │          │ Metrics │
-                        │Protocols│          └────┬────┘
-                        └─────────┘               │
-                              │                   │
-        ┌─────────────────────┼───────────────────┘
-        │                     │
-   ┌────▼────┐          ┌────▼──────┐
-   │  Utils  │          │Visualization│
-   │         │          │           │
-   │Generator│          │   Gantt   │
-   │Exporter │          │  Graphs   │
-   └─────────┘          └───────────┘
+┌──────────────────────────────────────────────────────────┐
+│                Priority Inversion System                 │
+│                                                          │
+│  React Frontend (port 3000)                              │
+│  ├── Dashboard   — KPIs, protocol info, compare table    │
+│  ├── Simulation  — Gantt animation, step/auto-play mode  │
+│  ├── Metrics     — Charts, full metrics table, PNG graphs│
+│  ├── Logs        — Filterable event log                  │
+│  └── Tasks       — Task CRUD editor                      │
+│                          │ HTTP / Axios                  │
+│  FastAPI Backend (port 8000)                             │
+│  ├── api.py      — All endpoints, step-mode sessions     │
+│  ├── models/     — Task class                            │
+│  ├── scheduler/  — Scheduler, Mutex, PIP/PCP protocols   │
+│  ├── simulation/ — Simulation orchestrator, metrics      │
+│  ├── utils/      — Task generator, CSV/JSON exporter     │
+│  └── visualization/ — Gantt + comparison PNG generation  │
+└──────────────────────────────────────────────────────────┘
 ```
 
-### Module Responsibilities
+---
 
-| Module | Responsibility |
-|--------|---------------|
-| **models** | Task data structure and attributes |
-| **scheduler** | Preemptive scheduling, mutex management, protocols |
-| **simulation** | Orchestration, metrics collection, analysis |
-| **utils** | Task generation, CSV/JSON export |
-| **visualization** | Gantt charts, comparison graphs |
+## Project Structure
+
+```
+priority_inversion_system/
+│
+├── api.py                       ← FastAPI app — all HTTP endpoints
+├── main.py                      ← Legacy CLI entry point
+├── requirements.txt
+├── tasks_config.json            ← Sample task config
+├── complex_tasks.json           ← Larger sample task config
+├── visualization.py             ← Legacy standalone visualiser
+│
+├── models/
+│   └── task.py                  ← Task class
+│
+├── scheduler/
+│   ├── scheduler.py             ← Preemptive priority scheduler
+│   ├── mutex.py                 ← Mutex resource management
+│   └── protocols.py             ← detect_priority_inversion, apply_pip, apply_pcp
+│
+├── simulation/
+│   ├── simulation.py            ← Simulation orchestrator + step() method
+│   └── metrics.py               ← MetricsCollector, calculate_metrics
+│
+├── utils/
+│   ├── task_generator.py        ← Random task generation
+│   └── exporter.py              ← CSV / JSON export
+│
+├── visualization/
+│   ├── gantt_chart.py           ← plot_gantt_chart() — saves PNG to output/
+│   └── performance_graphs.py    ← plot_comparison_graphs() — saves PNGs to output/
+│
+├── output/                      ← Generated PNG / CSV / JSON artefacts
+│   ├── gantt_none.png
+│   ├── gantt_pip.png
+│   ├── gantt_pcp.png
+│   ├── comparison_waiting_time.png
+│   ├── comparison_turnaround_time.png
+│   ├── comparison_context_switches.png
+│   └── comparison_inversion_duration.png
+│
+└── frontend/
+    ├── package.json
+    ├── tailwind.config.js
+    ├── postcss.config.js
+    └── src/
+        ├── App.js               ← Root component, global state, sidebar, topbar
+        ├── index.css            ← CSS variables + utility classes
+        ├── GanttChart.js        ← Interactive tick-grid Gantt component
+        ├── MetricsPanel.js      ← Bar charts + stat cards (Chart.js)
+        ├── EventLog.js          ← Scrollable log list (step mode)
+        ├── components/
+        │   └── ProtocolTabs.js  ← Reusable 3-tab protocol switcher
+        └── pages/
+            ├── DashboardPage.js ← KPI cards, protocol info, activity feed, compare table
+            ├── SimulationPage.js← Controls, speed slider, Gantt animation, step mode
+            ├── MetricsPage.js   ← Explainer cards, full metrics table, PNG graphs
+            ├── LogsPage.js      ← Filterable event log table
+            └── TasksPage.js     ← Task CRUD editor
+```
 
 ---
 
-## ✨ Features
-
-- ✅ **Preemptive Priority Scheduling** - Always runs highest priority ready task
-- ✅ **Priority Inversion Detection** - Automatically detects when inversion occurs
-- ✅ **Three Protocol Implementations** - None, PIP, PCP
-- ✅ **Comprehensive Metrics** - 9 performance indicators
-- ✅ **Enhanced Gantt Charts** - 4-state visualization (running, blocked, resource, priority change)
-- ✅ **Comparison Graphs** - Automatic protocol comparison
-- ✅ **Random Task Generation** - Configurable task generator
-- ✅ **Export Functionality** - CSV and JSON export
-- ✅ **CLI Interface** - Full command-line interface
-- ✅ **Detailed Logging** - Step-by-step execution trace
-
----
-
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
-- Python 3.7 or higher
-- pip package manager
+- Python 3.13+
+- Node.js 18+ and npm
 
-### Setup
+### Backend
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/priority-inversion-system.git
-cd priority-inversion-system
-
-# Install dependencies
-pip install matplotlib
-
-# Verify installation
-python main.py --help
+cd priority_inversion_system
+pip install fastapi uvicorn matplotlib
 ```
 
-### Requirements
+Or with a requirements file:
 
+```bash
+pip install -r requirements.txt
+pip install fastapi uvicorn   # add these if not already in requirements.txt
 ```
-matplotlib>=3.5.0
+
+### Frontend
+
+```bash
+cd frontend
+npm install
 ```
 
 ---
 
-## 🚀 Quick Start
+## Running the Application
 
-### Run Default Simulation
-
-```bash
-python main.py
-```
-
-This runs all three protocols with default tasks and generates Gantt charts.
-
-### Run Specific Protocol
+### Start the backend
 
 ```bash
-python main.py --protocol pip
+# From project root
+uvicorn api:app --reload
+# Runs at http://127.0.0.1:8000
 ```
 
-### Compare All Protocols
+### Start the frontend
 
 ```bash
-python main.py --compare --visualize
+cd frontend
+npm start
+# Runs at http://localhost:3000
 ```
+
+Open `http://localhost:3000` in your browser.
 
 ---
 
-## 💡 Usage Examples
+## API Reference
 
-### Example 1: Basic Simulation with Visualization
+Base URL: `http://127.0.0.1:8000`
 
-```bash
-python main.py --protocol pip --visualize
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/default-tasks` | Returns the 4 built-in demo tasks |
+| GET | `/run?protocol=None\|PIP\|PCP` | Runs demo tasks with the given protocol |
+| POST | `/simulate` | Runs custom tasks — see request body below |
+| POST | `/generate-graphs` | Runs all 3 protocols and saves PNGs to `output/` |
+| POST | `/step/init?protocol=&session_id=` | Creates a step-mode session |
+| POST | `/step/next?session_id=` | Advances the session by one tick |
+| DELETE | `/step/reset?session_id=` | Destroys a session |
+
+Static files in `output/` are served at `/output/<filename>`.
+
+### POST `/simulate` — request body
+
+```json
+{
+  "protocol": "PIP",
+  "tasks": [
+    { "name": "L",  "priority": 1, "arrival": 0, "execution": 10, "needs_resource": true  },
+    { "name": "H",  "priority": 5, "arrival": 4, "execution": 2,  "needs_resource": true  },
+    { "name": "M1", "priority": 3, "arrival": 1, "execution": 4,  "needs_resource": false },
+    { "name": "M2", "priority": 4, "arrival": 2, "execution": 3,  "needs_resource": false }
+  ]
+}
 ```
 
-### Example 2: Generate Random Tasks
+Constraints: 1–50 tasks, unique names, priority 1–100, execution ≥ 1. PCP requires at least one task with `needs_resource: true`.
 
-```bash
-python main.py --generate 10 --protocol pcp --visualize
+### Response shape
+
+```json
+{
+  "timeline": [{ "time": 0, "task": "L" }, ...],
+  "metrics":  { "total_time": 14, "avg_waiting_time": 1.67, ... },
+  "logs":     [{ "time": 0, "type": "run", "message": "Task L arrived" }, ...]
+}
 ```
 
-### Example 3: Priority Inversion Scenario
+### Metrics fields
 
-```bash
-python main.py --generate 5 --inversion-scenario --compare --visualize
-```
+| Field | Description |
+|-------|-------------|
+| `total_time` | Total simulation duration (time units) |
+| `avg_waiting_time` | Average time tasks spent waiting |
+| `avg_turnaround_time` | Average time from arrival to completion |
+| `avg_response_time` | Average time from arrival to first execution |
+| `cpu_utilization` | Percentage of time CPU was busy |
+| `context_switches` | Number of task switches |
+| `priority_inversion_count` | Number of inversion events detected |
+| `priority_inversion_duration` | Total time units spent in inversion |
+| `throughput` | Tasks completed per time unit |
 
-### Example 4: Full Analysis with Export
+### Log event types
 
-```bash
-python main.py --protocol pcp --metrics-report --export-all
-```
-
-### Example 5: Custom Configuration
-
-```bash
-python main.py --generate 8 --max-priority 10 --resource-prob 0.7 --protocol pip
-```
-
-### Programmatic Usage
-
-```python
-from models import Task
-from scheduler import Mutex
-from simulation import Simulation
-from visualization import plot_gantt_chart
-
-# Create tasks
-tasks = [
-    Task('T1', priority=3, arrival_time=0, execution_time=5, needs_resource=True),
-    Task('T2', priority=1, arrival_time=1, execution_time=3, needs_resource=False)
-]
-
-# Run simulation
-mutex = Mutex(ceiling_priority=3)
-sim = Simulation(tasks, mutex, protocol='PIP')
-results = sim.run()
-
-# Visualize
-plot_gantt_chart(results['timeline'], tasks, 'PIP')
-```
+`run` | `inversion` | `protocol` | `complete` | `error` | `idle`
 
 ---
 
-## 📊 Example Output
+## Frontend Pages
 
-### Console Output
+### Dashboard
+- KPI cards: Total Time, Avg Waiting Time, CPU Utilization, Inversion Count
+- Active Protocol info card with secondary metrics
+- Recent Activity feed (notable events only)
+- Protocol Comparison table with best-value highlighting (toggle with "Compare All")
+
+### Simulation
+- Protocol selector and Full Run / Step mode toggle
+- Speed slider for auto-play (100 ms – 2000 ms per tick)
+- Interactive Gantt chart with colour-coded states:
+  - Blue — running (normal)
+  - Orange — running while holding resource
+  - Purple — running with raised priority
+  - Red — blocked waiting for resource
+- Live scheduler state panel (ready queue, blocked queue, mutex owner)
+- Step-by-step event log
+
+### Metrics
+- Explainer cards for each protocol
+- Full metrics table for all completed protocols
+- Embedded PNG comparison graphs (generated server-side by matplotlib)
+
+### Logs
+- Filterable event log table by event type and protocol
+- Colour-coded rows matching event severity
+
+### Tasks
+- Add, edit, and delete tasks
+- Toggle `needs_resource` flag
+- Load built-in demo task set
+- Task count badge in sidebar when custom tasks are active
+
+---
+
+## Features
+
+- Preemptive priority scheduling — always runs the highest-priority ready task
+- Priority inversion detection — automatically detects and tracks inversion events
+- Three protocol implementations — None, PIP, PCP
+- Step-by-step execution — advance one tick at a time with live scheduler state
+- Auto-play mode — continuous playback with adjustable speed
+- Custom task editor — define up to 50 tasks via the UI
+- Protocol comparison — side-by-side metrics table with best-value highlighting
+- PNG graph export — Gantt charts and comparison graphs saved to `output/`
+- CSV / JSON export — full results exportable via CLI
+- Filterable event log — search and filter by type across all protocols
+- Demo mode — built-in 4-task scenario (L, H, M1, M2) that reproduces a classic inversion
+
+---
+
+## Example Output
+
+### Metrics (PIP protocol)
 
 ```
-============================================================
-Performance Metrics - PIP Protocol
-============================================================
-Total Time:                  8 time units
+Total Time:                  14 time units
 Average Waiting Time:        1.67 time units
 Average Turnaround Time:     4.33 time units
 Average Response Time:       1.67 time units
@@ -276,204 +350,89 @@ CPU Utilization:             100.00%
 Context Switches:            3
 Priority Inversion Count:    1
 Priority Inversion Duration: 1 time units
-Throughput:                  0.3750 tasks/time unit
+Throughput:                  0.2857 tasks/time unit
 ```
 
-### Comparison Table
+### Protocol Comparison
 
 ```
-====================================================================================================
-Protocol Comparison Report
-====================================================================================================
-
-Metric                                    None                 PIP                 PCP
-----------------------------------------------------------------------------------------------------
-Total Time                                   8                   8                   8
-Avg Waiting Time                          2.67                1.67                1.67
-Avg Turnaround Time                       5.33                4.33                4.33
-CPU Utilization (%)                     100.00              100.00              100.00
-Context Switches                             3                   3                   3
-Inversion Count                              1                   1                   1
-Inversion Duration                           3                   1                   1
-Throughput                              0.3750              0.3750              0.3750
+Metric                   None     PIP      PCP
+Avg Waiting Time         2.67     1.67     1.67
+Avg Turnaround Time      5.33     4.33     4.33
+CPU Utilization (%)    100.00   100.00   100.00
+Context Switches            3        3        3
+Inversion Count             1        1        1
+Inversion Duration          3        1        1
+Throughput             0.3750   0.3750   0.3750
 ```
 
 ---
 
-## 📸 Visualizations
+## CLI Usage
 
-### Enhanced Gantt Chart
+The legacy CLI is still available for headless / scripted use:
 
-The system generates color-coded Gantt charts showing:
-- 🔵 **Blue** - Task running (normal)
-- 🟠 **Orange** - Task running (holding resource)
-- 🟣 **Purple** - Task running (priority changed)
-- 🔴 **Red** - Task blocked (waiting for resource)
+```bash
+# Run default simulation
+python main.py
 
-![Gantt Chart Example](gantt_pip.png)
+# Run specific protocol
+python main.py --protocol pip
 
-### Comparison Graphs
+# Compare all protocols with visualisation
+python main.py --compare --visualize
 
-Automatic generation of 4 comparison graphs:
-1. Average Waiting Time
-2. Average Turnaround Time
-3. Context Switches
-4. Priority Inversion Duration
+# Generate random tasks
+python main.py --generate 10 --protocol pcp --visualize
 
-![Comparison Graph](comparison_waiting_time.png)
-
----
-
-## 📁 Project Structure
-
+# Export results
+python main.py --protocol pcp --metrics-report --export-all
 ```
-priority_inversion_system/
-│
-├── main.py                          # Entry point with CLI
-│
-├── models/                          # Data models
-│   ├── __init__.py
-│   └── task.py                      # Task class
-│
-├── scheduler/                       # Scheduling components
-│   ├── __init__.py
-│   ├── scheduler.py                 # Preemptive priority scheduler
-│   ├── mutex.py                     # Mutex resource management
-│   └── protocols.py                 # PIP and PCP implementations
-│
-├── simulation/                      # Simulation engine
-│   ├── __init__.py
-│   ├── simulation.py                # Simulation orchestration
-│   └── metrics.py                   # Performance metrics
-│
-├── utils/                           # Utility modules
-│   ├── __init__.py
-│   ├── task_generator.py            # Random task generation
-│   └── exporter.py                  # CSV/JSON export
-│
-├── visualization/                   # Visualization components
-│   ├── __init__.py
-│   ├── gantt_chart.py               # Gantt chart generation
-│   └── performance_graphs.py        # Comparison graphs
-│
-├── README.md                        # This file
-├── requirements.txt                 # Python dependencies
+
+### Programmatic usage
+
+```python
+from models import Task
+from scheduler import Mutex
+from simulation import Simulation
+
+tasks = [
+    Task('L', priority=1, arrival_time=0, execution_time=10, needs_resource=True),
+    Task('H', priority=5, arrival_time=4, execution_time=2,  needs_resource=True),
+]
+mutex = Mutex(ceiling_priority=5)
+results = Simulation(tasks, mutex, protocol='PIP').run()
 ```
 
 ---
 
-## 🔮 Future Improvements
+## Future Improvements
 
-### Planned Features
-
-- [ ] **Multiple Resources** - Support for multiple mutexes and complex dependencies
-- [ ] **Additional Protocols** - Immediate Priority Ceiling Protocol (IPCP), Stack Resource Policy (SRP)
-- [ ] **Deadlock Detection** - Implement deadlock detection and prevention
-- [ ] **Advanced Scheduling** - EDF (Earliest Deadline First), RMS (Rate Monotonic Scheduling)
-- [ ] **Interactive Visualization** - Real-time animation of scheduling
-- [ ] **Web Interface** - Browser-based simulation interface
-- [ ] **Statistical Analysis** - Monte Carlo simulation with random task sets
-- [ ] **RTOS Integration** - Interface with real-time operating systems
-- [ ] **Performance Optimization** - Faster simulation for large task sets
-- [ ] **Unit Tests** - Comprehensive test coverage
-
-### Enhancement Ideas
-
-- 🎨 Dark mode for visualizations
-- 📱 Mobile-friendly web interface
-- 🔊 Audio alerts for priority inversions
-- 📝 LaTeX report generation
-- 🌐 Multi-language support
-- 🎓 Tutorial mode for learning
+- Multiple resources — support for multiple mutexes and complex dependencies
+- Additional protocols — IPCP (Immediate Priority Ceiling), Stack Resource Policy
+- Deadlock detection and prevention
+- Advanced scheduling — EDF, Rate Monotonic Scheduling
+- Real-time Gantt animation with WebSocket streaming
+- Statistical analysis — Monte Carlo simulation over random task sets
+- Unit test suite
+- Dark mode for the dashboard
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit your changes** (`git commit -m 'Add AmazingFeature'`)
-4. **Push to the branch** (`git push origin feature/AmazingFeature`)
-5. **Open a Pull Request**
-
-### Development Guidelines
-
-- Follow PEP 8 style guide
-- Add docstrings to all functions
-- Include unit tests for new features
-- Update documentation as needed
-
----
-
-<!-- ## 📚 Documentation
-
-- [Project Report](PROJECT_REPORT.md) - Comprehensive technical documentation
-- [Viva Questions](VIVA_QUESTIONS.md) - Q&A for presentations
-- [CLI Documentation](CLI_DOCUMENTATION.md) - Complete CLI reference
-- [Refactoring Summary](REFACTORING_SUMMARY.md) - Architecture details
-- [Quick Reference](MODULAR_STRUCTURE_QUICKREF.md) - Import guide -->
-
-<!-- --- -->
-
-## 📖 References
+## References
 
 1. Sha, L., Rajkumar, R., & Lehoczky, J. P. (1990). "Priority Inheritance Protocols: An Approach to Real-Time Synchronization." *IEEE Transactions on Computers*.
-
 2. Liu, C. L., & Layland, J. W. (1973). "Scheduling Algorithms for Multiprogramming in a Hard-Real-Time Environment." *Journal of the ACM*.
-
-3. Buttazzo, G. C. (2011). "Hard Real-Time Computing Systems: Predictable Scheduling Algorithms and Applications." Springer.
-
+3. Buttazzo, G. C. (2011). *Hard Real-Time Computing Systems*. Springer.
 4. Reeves, G. (1997). "What Really Happened on Mars?" Microsoft Research.
-
-5. Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). "Operating System Concepts." Wiley, 10th Edition.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+5. Silberschatz, A., Galvin, P. B., & Gagne, G. (2018). *Operating System Concepts*, 10th ed. Wiley.
 
 ---
 
-## 👥 Authors
+## License
 
-**Priority Inversion Handling System Development Team**
-
-- Developed for Operating Systems Course Project
-- Inspired by the Mars Pathfinder incident
-- Based on research by Sha, Rajkumar, and Lehoczky
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-## 🙏 Acknowledgments
-
-- Inspired by NASA's Mars Pathfinder priority inversion incident
-- Based on seminal research in real-time scheduling
-- Built for educational purposes in Operating Systems courses
-- Thanks to the open-source community for tools and libraries
-
----
-
-## 📞 Support
-
-For questions, issues, or suggestions:
-
-- 📧 Open an issue on GitHub
-- 💬 Start a discussion in the repository
-- 📖 Check the documentation files
-
----
-
-## ⭐ Star History
-
-If you find this project useful, please consider giving it a star! ⭐
-
----
-
-**Last Updated:** 2026
-
-**Status:** Active Development
-
-**Version:** 1.0.0
+**Version:** 2.0.0 | **Status:** Active Development | **Last Updated:** 2026

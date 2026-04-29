@@ -15,18 +15,19 @@ from gui.controller import SimController, DEFAULT_TASKS, get_default_tasks
 
 # ── Palette ──────────────────────────────────────────────────────────────────
 
-BG          = '#1e1e2e'
-PANEL_BG    = '#2a2a3e'
-BORDER      = '#44475a'
-FG          = '#cdd6f4'
-FG_DIM      = '#6c7086'
-ACCENT      = '#89b4fa'
-GREEN       = '#a6e3a1'
-RED         = '#f38ba8'
-YELLOW      = '#f9e2af'
-ORANGE      = '#fab387'
-PURPLE      = '#cba6f7'
-TEAL        = '#94e2d5'
+BG          = '#0b0f1a'
+PANEL_BG    = '#121826'
+BORDER      = '#1e293b'
+FG          = '#f1f5f9'
+FG_DIM      = '#94a3b8'
+
+ACCENT      = '#6366f1'   # indigo glow
+GREEN       = '#4ade80'
+RED         = '#fb7185'
+YELLOW      = '#facc15'
+ORANGE      = '#fb923c'
+PURPLE      = '#a78bfa'
+TEAL        = '#2dd4bf'
 
 TASK_COLORS = [
     '#89b4fa', '#a6e3a1', '#f38ba8', '#fab387',
