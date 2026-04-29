@@ -7,7 +7,16 @@ __pycache__/
 # Virtual environment
 .venv/
 env/
-docs/
+*.docs/
+
+
+FinalReport.docx
+FinalReport.md
+FinalReport.pdf
+FinalReport.tex
+
+MASTER_CONTEXT.md
+
 
 
 # Logs
@@ -16,3 +25,6 @@ docs/
 # OS files
 .DS_Store
 Thumbs.db
+
+
+.vscode/
